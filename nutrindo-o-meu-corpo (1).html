@@ -1,0 +1,505 @@
+
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#fbf8f5">
+<title>Nutrindo o meu corpo</title>
+<style>
+:root {
+  --rose:#a76070; --rose-dark:#814452; --peach:#fae7dc; --sage:#e3ece1;
+  --cream:#fbf8f5; --ink:#373333; --muted:#746d6b; --line:#eadfda;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0; color:var(--ink); background:var(--cream);
+  font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+button,input,textarea,select { font:inherit; }
+button { cursor:pointer; touch-action:manipulation; }
+.wrap { width:min(100%,900px); margin:auto; padding:14px 12px 36px; }
+.hero {
+  padding:20px; background:linear-gradient(135deg,var(--peach),#f8eee8 65%,var(--sage));
+  border-radius:20px;
+}
+.hero h1 { margin:0 0 4px; font-size:clamp(1.55rem,7vw,2.1rem); line-height:1.2; }
+.hero p { margin:0; }
+.notice { margin-top:12px; padding:11px; background:#ffffffbb; border-radius:12px; font-size:.9rem; }
+.tabs {
+  display:flex; gap:7px; overflow-x:auto; padding:13px 1px 9px;
+  -webkit-overflow-scrolling:touch; scrollbar-width:thin;
+}
+.tab {
+  flex:0 0 auto; border:1px solid var(--line); border-radius:999px;
+  color:var(--rose-dark); background:white; padding:10px 13px; font-weight:650;
+}
+.tab[aria-selected="true"] { color:white; background:var(--rose); border-color:var(--rose); }
+.panel { display:none; }
+.panel.active { display:block; }
+.card { background:white; border:1px solid var(--line); border-radius:16px; padding:15px; margin:12px 0; }
+h2 { margin:0 0 9px; font-size:1.18rem; }
+h3 { margin:12px 0 7px; font-size:1rem; }
+p { margin:7px 0; }
+.help,.muted { color:var(--muted); font-size:.92rem; }
+.option { padding:11px; margin:8px 0; border:1px solid var(--line); border-radius:12px; background:#fffdfc; }
+.option.selected { border-color:var(--rose); background:#fff7f7; }
+.option label { display:flex; align-items:flex-start; gap:10px; cursor:pointer; }
+input[type=checkbox],input[type=radio] {
+  width:20px; height:20px; flex:0 0 20px; margin:2px 0 0;
+  accent-color:var(--rose);
+}
+.btn {
+  min-height:44px; border:0; border-radius:11px; padding:10px 14px;
+  color:white; background:var(--rose); font-weight:650;
+}
+.btn.alt { color:#334936; background:var(--sage); }
+.btn.subtle { color:var(--rose-dark); background:#f7eeeb; }
+input[type=text],input[type=date],textarea,select {
+  display:block; width:100%; min-height:46px; padding:11px;
+  border:1px solid #d9cfca; border-radius:11px; background:white; color:var(--ink);
+  font-size:16px;
+}
+textarea { min-height:120px; resize:vertical; }
+.field { margin:10px 0; }
+.field label { display:block; margin-bottom:5px; font-weight:650; }
+.actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.pill { display:inline-block; padding:3px 9px; border-radius:999px; background:var(--sage); font-size:.82rem; }
+.row { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.checklist { list-style:none; padding:0; margin:0; }
+.checklist li { padding:9px 0; border-bottom:1px solid #f0e9e5; }
+.checklist label { display:flex; align-items:flex-start; gap:10px; }
+.progress-track { height:9px; border-radius:99px; background:#eee7e3; overflow:hidden; }
+.progress-track span { display:block; height:100%; width:0; background:var(--rose); }
+.empty { color:var(--muted); }
+footer { padding:14px 5px; text-align:center; color:var(--muted); font-size:.84rem; }
+:focus-visible { outline:3px solid #c88d98; outline-offset:2px; }
+@media(min-width:700px) {
+  .wrap { padding:24px 18px 45px; }
+  .card { padding:20px; }
+  .tabs { flex-wrap:wrap; }
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header class="hero">
+  <h1>Nutrindo o meu corpo</h1>
+  <p>Reeducação alimentar · um dia de cada vez 🌿</p>
+  <div class="notice">Este organizador apresenta o plano fornecido pela utilizadora. Usa-o de acordo com as indicações da tua equipa de saúde; não substitui aconselhamento clínico.</div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Secções">
+  <button class="tab" role="tab" id="tab-plan" aria-controls="plan" aria-selected="true">O meu plano</button>
+  <button class="tab" role="tab" id="tab-generator" aria-controls="generator" aria-selected="false">Meal Generator</button>
+  <button class="tab" role="tab" id="tab-progress" aria-controls="progress" aria-selected="false">Progresso do dia</button>
+  <button class="tab" role="tab" id="tab-routine" aria-controls="routine" aria-selected="false">Rotina saudável</button>
+  <button class="tab" role="tab" id="tab-notes" aria-controls="notes" aria-selected="false">Notas para a consulta</button>
+</nav>
+
+<section class="panel active" id="plan" role="tabpanel" aria-labelledby="tab-plan">
+  <div class="card"><h2>Rotina matinal — em jejum</h2><p class="help">Checklist de início do dia.</p><ul class="checklist" id="morning-list"></ul></div>
+  <div class="card"><h2>Pequeno-almoço</h2><p class="help">Escolher uma opção.</p><div id="breakfast-options"></div></div>
+  <div class="card"><h2>Lanche da manhã</h2><p class="help">Escolher uma opção.</p><div id="morning-snack-options"></div></div>
+  <div class="card">
+    <h2>Almoço</h2><p class="help">Montar o prato com os quatro componentes.</p><div id="lunch-options"></div>
+    <p><strong>Nota do plano:</strong> proteína vegetal permitida: edamame, grão-de-bico, tremoço ou lentilha. Evitar soja e tofu.</p>
+    <p><strong>Legumes a evitar:</strong> couve, couve-flor, brócolos e repolho.</p>
+  </div>
+  <div class="card"><h2>Lanche da tarde</h2><p class="help">Escolher uma opção.</p><div id="afternoon-options"></div></div>
+  <div class="card"><h2>Jantar</h2><p class="help">Montar o prato com a estrutura indicada.</p><div id="dinner-options"></div><p><span class="pill">No plano: jantar até às 20:00</span></p></div>
+  <div class="card"><h2>Ceia</h2><div id="bedtime-options"></div></div>
+</section>
+
+<section class="panel" id="generator" role="tabpanel" aria-labelledby="tab-generator">
+  <div class="card">
+    <h2>Meal Generator</h2>
+    <p>Escreve os ingredientes que tens disponíveis para encontrar opções correspondentes do plano.</p>
+    <p class="help">Não precisas de indicar quantidades. As opções mostram as porções do plano. Não são propostas substituições nem alimentos novos.</p>
+    <div class="field"><label for="ingredients">Ingredientes disponíveis</label><input id="ingredients" type="text" placeholder="Ex.: ovo, banana, aveia"></div>
+    <div class="field"><label for="meal-filter">Refeição</label>
+      <select id="meal-filter">
+        <option value="all">Todas as refeições</option>
+        <option value="breakfast">Pequeno-almoço</option>
+        <option value="morningSnack">Lanche da manhã</option>
+        <option value="lunch">Almoço</option>
+        <option value="afternoonSnack">Lanche da tarde</option>
+        <option value="dinner">Jantar</option>
+        <option value="bedtime">Ceia</option>
+      </select>
+    </div>
+    <button class="btn" id="find">Encontrar opções</button>
+    <div id="results" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="panel" id="progress" role="tabpanel" aria-labelledby="tab-progress">
+  <div class="card">
+    <h2>Registo do dia</h2>
+    <div class="field"><label for="date-picker">Seleciona a data</label><input type="date" id="date-picker" value="2026-09-27"></div>
+    <div class="actions">
+      <button class="btn" id="save-day">Guardar este dia</button>
+      <button class="btn subtle" id="clear-day">Limpar registo em edição</button>
+    </div>
+    <p id="save-status" class="help" aria-live="polite">Seleciona a data e guarda o registo.</p>
+    <hr style="border:0;border-top:1px solid #eee5e1;margin:16px 0">
+    <div class="row"><h2>Progresso</h2><span class="pill" id="date-label"></span></div>
+    <p id="progress-count" class="help"></p>
+    <div class="progress-track"><span id="progress-bar"></span></div>
+    <div id="daily-progress"></div>
+  </div>
+  <div class="card">
+    <h2>Journaling do dia</h2>
+    <p class="help">Comentários ou reflexões que queiras guardar para esta data.</p>
+    <textarea id="journal" placeholder="Como foi o teu dia?"></textarea>
+  </div>
+  <div class="card">
+    <h2>Exportar registos</h2>
+    <p class="help">JSON conserva os dados estruturados; CSV é prático para folhas de cálculo.</p>
+    <div class="actions"><button class="btn alt" id="export-json">Exportar JSON</button><button class="btn alt" id="export-csv">Exportar CSV</button></div>
+    <p class="help">Os ficheiros podem conter informação pessoal. Guarda-os num local privado.</p>
+  </div>
+</section>
+
+<section class="panel" id="routine" role="tabpanel" aria-labelledby="tab-routine">
+  <div class="card"><h2>Rotina saudável</h2><ul class="checklist" id="routine-list"></ul></div>
+</section>
+
+<section class="panel" id="notes" role="tabpanel" aria-labelledby="tab-notes">
+  <div class="card">
+    <h2>Notas para a consulta</h2>
+    <p class="help">Regista dúvidas ou pontos para rever com o médico ou nutricionista.</p>
+    <textarea id="consult-notes" placeholder="O que gostarias de perguntar na próxima consulta?"></textarea>
+    <p class="help">Guardado neste navegador.</p>
+  </div>
+</section>
+<footer>Os dados ficam guardados localmente neste navegador e não são enviados para um servidor.</footer>
+</main>
+
+<script>
+(function() {
+  "use strict";
+
+  const PLAN = [
+    {id:"breakfast",title:"Pequeno-almoço",options:[
+      {name:"Opção 1",text:"50 g de pão de fermentação lenta + 1 ovo (mexido/cozido) + 1 banana ou 100 g de outra fruta permitida + bebida a gosto.",ingredients:["pão de fermentação lenta","ovo","banana","outra fruta permitida"]},
+      {name:"Opção 2 — Panqueca",text:"1 banana madura (ou 100 g de outra fruta permitida) + 20 g de flocos de aveia + 1 ovo + canela (com fio de mel) + bebida a gosto.",ingredients:["banana","outra fruta permitida","aveia","ovo","canela","mel"]},
+      {name:"Opção 3 — Crepioca",text:"30 g de polvilho doce + 1 ovo + 60 g de claras (2 claras) + espinafres/cenoura/tomate.",ingredients:["polvilho doce","ovo","claras","espinafres","cenoura","tomate"]},
+      {name:"Opção 4 — Overnight oats",text:"30 g de aveia + 10 g de chia + 100 ml de iogurte natural + 20 g de whey (ou amendoim em pó) + fruta: 1 banana ou 100 g de outra fruta permitida (mamão, morango, abacaxi, melão ou 76 g de kiwi).",ingredients:["aveia","chia","iogurte natural","whey","amendoim em pó","banana","mamão","morango","abacaxi","melão","kiwi"]}
+    ]},
+    {id:"morningSnack",title:"Lanche da manhã",options:[
+      {name:"Opção 1",text:"2 tortitas de milho/arroz + 30 g de queijo cottage.",ingredients:["tortitas de milho","tortitas de arroz","queijo cottage"]},
+      {name:"Opção 2",text:"Fruta (1 banana ou 100 g de outra fruta permitida) esmagada + 20 g de whey sem aditivos.",ingredients:["banana","outra fruta permitida","whey"]},
+      {name:"Opção 3",text:"125 g de iogurte grego light + 10 g de sementes de cânhamo + ½ banana ou 50 g de outra fruta.",ingredients:["iogurte grego light","sementes de cânhamo","banana","outra fruta permitida"]},
+      {name:"Opção 4",text:"1 pote de iogurte proteico + 50 g de frutos vermelhos.",ingredients:["iogurte proteico","frutos vermelhos"]},
+      {name:"Opção 5 — Rápida",text:"1 pudim proteico de compra.",ingredients:["pudim proteico"]}
+    ]},
+    {id:"lunch",title:"Almoço",options:[
+      {name:"Hidrato — escolher 1",text:"100 g de arroz basmati cozido (aprox. 3 colheres de sopa), 100 g de quinoa cozida, 100 g de couscous marroquino cozido, 150 g de batata cozida/assada ou 100 g de massa sem glúten cozida.",ingredients:["arroz basmati","quinoa","couscous","batata","massa sem glúten"],group:"lunch"},
+      {name:"Proteína — escolher 1",text:"120 g de frango, peru ou peixe. Proteína vegetal permitida: edamame, grão-de-bico, tremoço ou lentilha. Evitar soja e tofu.",ingredients:["frango","peru","peixe","edamame","grão-de-bico","tremoço","lentilha"],group:"lunch"},
+      {name:"Legumes e salada",text:"Legumes refogados ou assados; salada à discrição (azeite, limão e sal). Evitar couve, couve-flor, brócolos e repolho.",ingredients:["legumes permitidos","salada","azeite","limão","sal"],group:"lunch"},
+      {name:"Extra obrigatório",text:"15 g de crackers de sementes.",ingredients:["crackers de sementes"],group:"lunch"}
+    ]},
+    {id:"afternoonSnack",title:"Lanche da tarde",options:[
+      {name:"Opção 1",text:"Repetir qualquer opção do pequeno-almoço.",ingredients:["pão de fermentação lenta","ovo","banana","aveia","polvilho doce","iogurte natural"]},
+      {name:"Opção 2 — Crepioca leve",text:"20 g de polvilho doce + 1 ovo + 50 g de claras (1 clara).",ingredients:["polvilho doce","ovo","claras"]},
+      {name:"Opção 3",text:"125 g de iogurte grego light + 15 g de sementes de cânhamo + fruta (1 banana ou 100 g de outra fruta) com fio de mel.",ingredients:["iogurte grego light","sementes de cânhamo","banana","outra fruta permitida","mel"]},
+      {name:"Opção 4",text:"125 g de iogurte grego light + 15 g de crackers + 10 g de sementes de cânhamo + fruta (1 banana ou 100 g de outra fruta).",ingredients:["iogurte grego light","crackers de sementes","sementes de cânhamo","banana","outra fruta permitida"]},
+      {name:"Opção 5 — Wrap prático",text:"1 folha de wrap + pasta de proteína (80 g de frango/peru/atum/salmão + 30 g de cottage ou iogurte grego + azeite) + alface/tomate.",ingredients:["wrap","frango","peru","atum","salmão","queijo cottage","iogurte grego light","azeite","alface","tomate"]},
+      {name:"Opção 6 — Sem laticínios/whey",text:"2 ou 3 tortitas de milho com pasta de atum (1 lata de atum + 1 colher de sopa de azeite + temperos).",ingredients:["tortitas de milho","atum","azeite"]}
+    ]},
+    {id:"dinner",title:"Jantar",options:[
+      {name:"Hidrato — escolher 1",text:"100 g de arroz cozido (aprox. 3 colheres de sopa), quinoa, couscous, massa sem glúten ou 150 g de batata.",ingredients:["arroz basmati","quinoa","couscous","massa sem glúten","batata"],group:"dinner"},
+      {name:"Proteína — escolher 1",text:"120 g de frango, peru ou peixe.",ingredients:["frango","peru","peixe"],group:"dinner"},
+      {name:"Legumes e salada",text:"Legumes permitidos; evitar couves, brócolos, couve-flor e repolho. Salada.",ingredients:["legumes permitidos","salada"],group:"dinner"},
+      {name:"Extra obrigatório",text:"15 g de crackers de sementes.",ingredients:["crackers de sementes"],group:"dinner"}
+    ]},
+    {id:"bedtime",title:"Ceia",options:[
+      {name:"Snack",text:"100 g de pipocas caseiras.",ingredients:["pipocas caseiras"]},
+      {name:"Chá",text:"Chá de Tulsi sem cafeína, 1 hora antes de dormir.",ingredients:["chá de Tulsi"]}
+    ]}
+  ];
+
+  const MORNING = [
+    "Raspar a língua (raspador ayurvédico)",
+    "500 ml de água mineral",
+    "Suplementação: Complexo de Ferro (Iron Complex) + Chaste Berry (Vitex)"
+  ];
+  const ROUTINE = [
+    "Deitar até às 21:00/21:30",
+    "Melatonina às 18:00, se necessário e conforme indicação clínica",
+    "Ativar ecrãs em modo noturno 3 horas antes de deitar",
+    "Telemóvel fora da cabeceira",
+    "Sem cafeína depois das 15:00",
+    "Hidratação diária total: cerca de 3 litros de água concluídos"
+  ];
+
+  const ARCHIVE_KEY="nutrindo-archive-mobile";
+  const NOTES_KEY="nutrindo-consult-notes-mobile";
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function read(key,fallback) {
+    try { const v=localStorage.getItem(key); return v===null?fallback:JSON.parse(v); }
+    catch(e) { return fallback; }
+  }
+  function write(key,value) {
+    try { localStorage.setItem(key,JSON.stringify(value)); return true; }
+    catch(e) { return false; }
+  }
+  function clone(value) { return JSON.parse(JSON.stringify(value)); }
+  function blankDay() { return {selected:{},done:{},checks:{},journal:""}; }
+  let archive=read(ARCHIVE_KEY,{});
+  let currentDate="2026-09-27";
+  let state=blankDay();
+
+  function optionKey(mealId,index) { return mealId+":"+index; }
+
+  function renderChecklist(targetId,items,prefix) {
+    $(targetId).innerHTML=items.map((text,i)=>{
+      const key=prefix+":"+i;
+      return `<li><label><input type="checkbox" data-check="${key}" ${state.checks[key]?"checked":""}><span>${esc(text)}</span></label></li>`;
+    }).join("");
+  }
+
+  function renderMeal(targetId,meal) {
+    $(targetId).innerHTML=meal.options.map((opt,i)=>{
+      const key=optionKey(meal.id,i);
+      const checked=!!state.selected[key];
+      const type=opt.group?"checkbox":"radio";
+      const name=opt.group?meal.id+"-group":meal.id+"-choice";
+      return `<div class="option ${checked?"selected":""}">
+        <label><input type="${type}" name="${name}" data-select="${key}" ${checked?"checked":""}>
+        <span><strong>${esc(opt.name)}:</strong> ${esc(opt.text)}</span></label></div>`;
+    }).join("");
+  }
+
+  function getSelected() {
+    const list=[];
+    PLAN.forEach(meal=>meal.options.forEach((opt,i)=>{
+      const key=optionKey(meal.id,i);
+      if(state.selected[key]) list.push({meal:meal,opt:opt,index:i,key:key});
+    }));
+    return list;
+  }
+
+  function renderProgress() {
+    const chosen=getSelected();
+    const allChecks=Object.values(state.checks).filter(Boolean).length;
+    const doneMeals=chosen.filter(item=>state.done[item.key]).length;
+    const total=chosen.length+MORNING.length+ROUTINE.length;
+    const done=doneMeals+allChecks;
+    $("progress-count").textContent=done+" de "+total+" itens concluídos · "+chosen.length+" escolhas";
+    $("progress-bar").style.width=(total?Math.min(100,done/total*100):0)+"%";
+    $("date-label").textContent=new Date(currentDate+"T12:00:00").toLocaleDateString("pt-PT",{weekday:"short",day:"numeric",month:"short",year:"numeric"});
+
+    const html=[];
+    PLAN.forEach(meal=>{
+      const picked=chosen.filter(item=>item.meal.id===meal.id);
+      if(!picked.length) return;
+      html.push(`<div class="card"><h3>${esc(meal.title)}</h3>`+
+        picked.map(item=>`<div class="option"><label>
+          <input type="checkbox" data-done="${item.key}" ${state.done[item.key]?"checked":""}>
+          <span><strong>${esc(item.opt.name)}:</strong> ${esc(item.opt.text)}<br><small>Marcar como feito</small></span>
+        </label></div>`).join("")+"</div>");
+    });
+    $("daily-progress").innerHTML=html.length?html.join(""):'<p class="empty">Ainda não escolheste opções para este dia.</p>';
+  }
+
+  function renderAll() {
+    renderChecklist("morning-list",MORNING,"morning");
+    renderChecklist("routine-list",ROUTINE,"routine");
+    renderMeal("breakfast-options",PLAN[0]);
+    renderMeal("morning-snack-options",PLAN[1]);
+    renderMeal("lunch-options",PLAN[2]);
+    renderMeal("afternoon-options",PLAN[3]);
+    renderMeal("dinner-options",PLAN[4]);
+    renderMeal("bedtime-options",PLAN[5]);
+    $("journal").value=state.journal||"";
+    renderProgress();
+  }
+
+  function persistDraft() {
+    archive[currentDate]=clone(state);
+    return write(ARCHIVE_KEY,archive);
+  }
+
+  function loadDate(date) {
+    if(!date) return;
+    currentDate=date;
+    archive=read(ARCHIVE_KEY,{});
+    state=clone(archive[date]||blankDay());
+    $("date-picker").value=date;
+    renderAll();
+    $("save-status").textContent=archive[date]?"Registo desta data carregado.":"Ainda não há registo guardado para esta data.";
+  }
+
+  // Único listener para escolhas, tarefas e marcações concluídas.
+  document.addEventListener("change",function(event) {
+    const el=event.target;
+    if(el.matches("[data-select]")) {
+      const key=el.dataset.select;
+      const mealId=key.split(":")[0];
+      if(el.type==="radio") {
+        Object.keys(state.selected).forEach(k=>{if(k.indexOf(mealId+":")===0) delete state.selected[k];});
+        if(el.checked) state.selected[key]=true;
+      } else {
+        if(el.checked) state.selected[key]=true;
+        else delete state.selected[key];
+      }
+      persistDraft(); renderAll(); return;
+    }
+    if(el.matches("[data-check]")) {
+      state.checks[el.dataset.check]=el.checked;
+      persistDraft(); renderProgress(); return;
+    }
+    if(el.matches("[data-done]")) {
+      state.done[el.dataset.done]=el.checked;
+      persistDraft(); renderProgress();
+    }
+  });
+
+  $("date-picker").addEventListener("change",function() { loadDate(this.value); });
+
+  $("journal").addEventListener("input",function() {
+    state.journal=this.value;
+    persistDraft();
+  });
+
+  $("save-day").addEventListener("click",function() {
+    currentDate=$("date-picker").value||currentDate;
+    state.journal=$("journal").value;
+    archive[currentDate]=clone(state);
+    const ok=write(ARCHIVE_KEY,archive);
+    $("save-status").textContent=ok
+      ?"Registo de "+new Date(currentDate+"T12:00:00").toLocaleDateString("pt-PT")+" guardado neste navegador."
+      :"Não foi possível guardar. Exporta os dados ou abre o ficheiro num navegador normal.";
+  });
+
+  $("clear-day").addEventListener("click",function() {
+    if(!confirm("Limpar o registo desta data? Clica em “Guardar este dia” para guardar o registo vazio.")) return;
+    state=blankDay();
+    renderAll();
+    $("save-status").textContent="Registo limpo em edição. Guarda para confirmar.";
+  });
+
+  $("find").addEventListener("click",findMeals);
+  $("ingredients").addEventListener("keydown",function(e) {
+    if(e.key==="Enter") { e.preventDefault(); findMeals(); }
+  });
+
+  function normalize(text) {
+    return text.toLocaleLowerCase("pt-PT").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+  }
+
+  function findMeals() {
+    const words=$("ingredients").value.split(/[;,]+/).map(normalize).filter(Boolean);
+    const filter=$("meal-filter").value;
+    if(!words.length) {
+      $("results").innerHTML='<p class="empty">Escreve um ou mais ingredientes para procurar.</p>';
+      return;
+    }
+    const meals=filter==="all"?PLAN:PLAN.filter(m=>m.id===filter);
+    const found=[];
+    meals.forEach(meal=>meal.options.forEach((opt,i)=>{
+      const matches=words.some(word=>opt.ingredients.some(ing=>{
+        const item=normalize(ing);
+        return item.includes(word)||word.includes(item);
+      }));
+      if(matches) found.push({meal:meal,opt:opt,index:i});
+    }));
+    if(!found.length) {
+      $("results").innerHTML='<p class="empty">Não encontrei correspondências no plano. Experimenta outra escrita ou confirma alternativas com a tua equipa de saúde.</p>';
+      return;
+    }
+    $("results").innerHTML='<p class="pill">'+found.length+' opção(ões) correspondente(s)</p>'+
+      found.map(item=>{
+        const key=optionKey(item.meal.id,item.index);
+        return `<div class="option"><span class="pill">${esc(item.meal.title)}</span>
+          <p><strong>${esc(item.opt.name)}:</strong> ${esc(item.opt.text)}</p>
+          <button class="btn alt" data-add="${key}">${state.selected[key]?"Selecionada":"Adicionar ao meu dia"}</button></div>`;
+      }).join("");
+  }
+
+  $("results").addEventListener("click",function(event) {
+    const button=event.target.closest("[data-add]");
+    if(!button) return;
+    const key=button.dataset.add;
+    const parts=key.split(":");
+    const meal=PLAN.find(m=>m.id===parts[0]);
+    const opt=meal.options[Number(parts[1])];
+    if(opt.group) {
+      if(state.selected[key]) delete state.selected[key];
+      else state.selected[key]=true;
+    } else {
+      Object.keys(state.selected).forEach(k=>{if(k.indexOf(meal.id+":")===0) delete state.selected[k];});
+      state.selected[key]=true;
+    }
+    persistDraft(); renderAll(); findMeals();
+  });
+
+  function download(filename,text,type) {
+    const blob=new Blob([text],{type:type});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+
+  $("export-json").addEventListener("click",function() {
+    archive=read(ARCHIVE_KEY,{});
+    archive[currentDate]=clone(state);
+    write(ARCHIVE_KEY,archive);
+    download("nutrindo-registos.json",JSON.stringify({
+      exportadoEm:new Date().toISOString(),
+      registos:archive,
+      notasConsulta:read("nutrindo-consult-notes-mobile","")
+    },null,2),"application/json;charset=utf-8");
+  });
+
+  $("export-csv").addEventListener("click",function() {
+    archive=read(ARCHIVE_KEY,{});
+    archive[currentDate]=clone(state);
+    write(ARCHIVE_KEY,archive);
+    const quote=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+    const rows=[["Data","Refeição","Opção","Descrição","Feito","Journaling"]];
+    Object.keys(archive).sort().forEach(date=>{
+      const record=archive[date]||{};
+      let added=false;
+      PLAN.forEach(meal=>meal.options.forEach((opt,i)=>{
+        const key=optionKey(meal.id,i);
+        if(record.selected&&record.selected[key]) {
+          rows.push([date,meal.title,opt.name,opt.text,record.done&&record.done[key]?"Sim":"Não",record.journal||""]);
+          added=true;
+        }
+      }));
+      if(record.journal) {
+        rows.push([date,"Journaling","","", "",record.journal]);
+        added=true;
+      }
+      if(!added) rows.push([date,"","","","",""]);
+    });
+    const csv="\uFEFF"+rows.map(row=>row.map(quote).join(";")).join("\r\n");
+    download("nutrindo-registos.csv",csv,"text/csv;charset=utf-8");
+  });
+
+  $("consult-notes").value=read(NOTES_KEY,"");
+  $("consult-notes").addEventListener("input",function() {
+    try { localStorage.setItem(NOTES_KEY,JSON.stringify(this.value)); } catch(e) {}
+  });
+
+  document.querySelector(".tabs").addEventListener("click",function(event) {
+    const button=event.target.closest('[role="tab"]');
+    if(!button) return;
+    document.querySelectorAll('[role="tab"]').forEach(tab=>
+      tab.setAttribute("aria-selected",tab===button?"true":"false")
+    );
+    document.querySelectorAll(".panel").forEach(panel=>panel.classList.remove("active"));
+    $(button.getAttribute("aria-controls")).classList.add("active");
+    button.focus();
+  });
+
+  loadDate("2026-09-27");
+})();
+</script>
+</body>
+</html>
